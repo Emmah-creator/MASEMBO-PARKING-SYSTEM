@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>History - Masembo Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>🅿️ Masembo Parking System</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('checkout_preview') }}">Exit / Pay</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if is_staff %}
+        <form method="POST" action="{{ url_for('logout') }}" style="display:inline;">
+            <button type="submit" style="padding:0.3rem 0.8rem;margin-left:1.2rem;">Log Out</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('login', next=request.path) }}">Staff Login</a>
+        {% endif %}
+    </nav>
+</header>
+<main>
+    <h2>Recent Sessions</h2>
+    <table>
+        <tr>
+            <th>Plate</th><th>Slot</th><th>Entry</th><th>Exit</th><th>Fee (Kshs)</th><th>Payment</th><th>Status</th>
+        </tr>
+        {% for r in rows %}
+        <tr>
+            <td>{{ r.plate_number }}</td>
+            <td>{{ r.slot_number }}</td>
+            <td>{{ r.entry_time }}</td>
+            <td>{{ r.exit_time or '-' }}</td>
+            <td>{{ r.fee if r.fee is not none else '-' }}</td>
+            <td>{% if r.payment_method == 'mpesa' %}M-Pesa{% else %}Cash{% endif %}</td>
+            <td>{{ r.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Masembo Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>🅿️ Masembo Parking System</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('checkout_preview') }}">Exit / Pay</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if is_staff %}
+        <form method="POST" action="{{ url_for('logout') }}" style="display:inline;">
+            <button type="submit" style="padding:0.3rem 0.8rem;margin-left:1.2rem;">Log Out</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('login', next=request.path) }}">Staff Login</a>
+        {% endif %}
+    </nav>
+</header>
+<main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="summary">
+        <div class="box"><div class="num">{{ available }}</div>Slots Available</div>
+        <div class="box"><div class="num">{{ total - available }}</div>Slots Occupied</div>
+        <div class="box"><div class="num">{{ total }}</div>Total Slots</div>
+    </div>
+
+    {% if is_staff %}
+    <form class="panel" method="POST" action="{{ url_for('entry') }}">
+        <h2>Vehicle Arrival</h2>
+        <input type="text" name="plate_number" placeholder="e.g. KDA 123B" required>
+        <button type="submit">Record Entry</button>
+    </form>
+    {% else %}
+    <div class="panel">
+        <h2>Vehicle Arrival</h2>
+        <p>Only logged-in attendants can record an arrival. <a href="{{ url_for('login', next=request.path) }}">Staff Login</a></p>
+    </div>
+    {% endif %}
+
+    <h2>Live Slot Display</h2>
+    <div class="slot-grid">
+        {% for slot in slots %}
+            <div class="slot {{ slot.status }}">
+                {{ slot.slot_number }}
+                {% if slot.plate_number %}<small>{{ slot.plate_number }}</small>{% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</main>
+</body>
+</html>

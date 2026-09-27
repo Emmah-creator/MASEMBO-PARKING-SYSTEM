@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Confirmed - Masembo Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>🅿️ Masembo Parking System</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('checkout_preview') }}">Exit / Pay</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if is_staff %}
+        <form method="POST" action="{{ url_for('logout') }}" style="display:inline;">
+            <button type="submit" style="padding:0.3rem 0.8rem;margin-left:1.2rem;">Log Out</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('login', next=request.path) }}">Staff Login</a>
+        {% endif %}
+    </nav>
+</header>
+<main>
+    <div class="barrier">
+        <div class="status">BARRIER {{ receipt.barrier }}</div>
+        <p>Please drive through.</p>
+    </div>
+
+    <h2>Receipt</h2>
+    <div class="panel">
+        <div class="receipt-row"><span>Plate Number</span><strong>{{ receipt.plate_number }}</strong></div>
+        <div class="receipt-row"><span>Slot</span><strong>{{ receipt.slot_number }}</strong></div>
+        <div class="receipt-row"><span>Entry Time</span><strong>{{ receipt.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}</strong></div>
+        <div class="receipt-row"><span>Exit Time</span><strong>{{ receipt.exit_time.strftime('%Y-%m-%d %H:%M:%S') }}</strong></div>
+        <div class="receipt-row"><span>Duration</span><strong>{{ receipt.minutes }} minutes</strong></div>
+        <div class="receipt-row"><span>Amount Paid</span><strong>Kshs. {{ receipt.fee }}</strong></div>
+        <div class="receipt-row">
+            <span>Payment Method</span>
+            <strong>{% if receipt.payment_method == 'mpesa' %}Lipa na M-Pesa{% else %}Cash{% endif %}</strong>
+        </div>
+        {% if receipt.mpesa_receipt %}
+        <div class="receipt-row"><span>M-Pesa Receipt</span><strong>{{ receipt.mpesa_receipt }}</strong></div>
+        {% endif %}
+    </div>
+
+    <a href="{{ url_for('dashboard') }}"><button>Back to Dashboard</button></a>
+</main>
+</body>
+</html>

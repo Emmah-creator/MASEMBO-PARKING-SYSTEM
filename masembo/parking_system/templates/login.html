@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Login - Masembo Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>🅿️ Masembo Parking System</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    </nav>
+</header>
+<main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form class="panel" method="POST" action="{{ url_for('login') }}" style="max-width:360px;margin:2rem auto 0;">
+        <h2>Staff Login</h2>
+        <input type="hidden" name="next" value="{{ next }}">
+        <label for="password" style="display:block;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;">
+            Shared attendant password
+        </label>
+        <input type="password" id="password" name="password" placeholder="Password" required style="width:100%;margin:0 0 0.8rem 0;">
+        <button type="submit" style="width:100%;">Log In</button>
+    </form>
+</main>
+</body>
+</html>

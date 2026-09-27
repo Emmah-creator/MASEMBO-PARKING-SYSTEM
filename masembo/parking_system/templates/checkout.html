@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exit / Pay - Masembo Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>🅿️ Masembo Parking System</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('checkout_preview') }}">Exit / Pay</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if is_staff %}
+        <form method="POST" action="{{ url_for('logout') }}" style="display:inline;">
+            <button type="submit" style="padding:0.3rem 0.8rem;margin-left:1.2rem;">Log Out</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('login', next=request.path) }}">Staff Login</a>
+        {% endif %}
+    </nav>
+</header>
+<main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form class="panel" method="GET" action="{{ url_for('checkout_preview') }}">
+        <h2>Vehicle Exit</h2>
+        <input type="text" name="plate_number" placeholder="Enter number plate" value="{{ plate or '' }}" required>
+        <button type="submit">Look Up</button>
+    </form>
+
+    {% if preview %}
+    <div class="barrier">
+        <p>Plate: <strong>{{ preview.plate_number }}</strong></p>
+        <p>Entry time: {{ preview.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        <p>Duration so far: {{ preview.minutes }} minutes</p>
+        <p>Amount due: <strong>Kshs. {{ preview.fee }}</strong></p>
+
+        {% if preview.fee <= 0 %}
+        {% if is_staff %}
+        <form method="POST" action="{{ url_for('checkout_confirm') }}">
+            <input type="hidden" name="plate_number" value="{{ preview.plate_number }}">
+            <button type="submit">Open Barrier (Free Exit)</button>
+        </form>
+        {% else %}
+        <p><a href="{{ url_for('login', next=request.path) }}">Staff Login</a> to open the barrier.</p>
+        {% endif %}
+        {% else %}
+        {% if is_staff %}
+        <div class="pay-options">
+            <form class="pay-option" method="POST" action="{{ url_for('checkout_mpesa') }}">
+                <input type="hidden" name="plate_number" value="{{ preview.plate_number }}">
+                <label for="phone_number">M-Pesa Number</label>
+                <input type="tel" id="phone_number" name="phone_number" placeholder="0712 345 678" required>
+                <button type="submit" class="mpesa-btn">📲 Lipa na M-Pesa</button>
+            </form>
+            <form class="pay-option" method="POST" action="{{ url_for('checkout_confirm') }}">
+                <input type="hidden" name="plate_number" value="{{ preview.plate_number }}">
+                <label>&nbsp;</label>
+                <button type="submit" class="cash-btn">Pay with Cash</button>
+            </form>
+        </div>
+        {% else %}
+        <p><a href="{{ url_for('login', next=request.path) }}">Staff Login</a> to take payment.</p>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+</main>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Waiting for M-Pesa - Masembo Parking System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <h1>🅿️ Masembo Parking System</h1>
+    <nav>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('checkout_preview') }}">Exit / Pay</a>
+        <a href="{{ url_for('history') }}">History</a>
+    </nav>
+</header>
+<main>
+    <div class="barrier" id="wait-panel">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Plate: <strong>{{ plate }}</strong></p>
+        <p>STK push sent to <strong>{{ phone }}</strong></p>
+        <p>Amount: <strong>Kshs. {{ amount }}</strong></p>
+        <p id="wait-message">Enter your M-Pesa PIN on your phone to complete payment&hellip;</p>
+    </div>
+
+    <div class="barrier" id="failed-panel" style="display:none;">
+        <p>⚠️ Payment was not completed.</p>
+        <p id="fail-reason"></p>
+        <a href="{{ url_for('checkout_preview', plate_number=plate) }}"><button>Try Again</button></a>
+    </div>
+</main>
+
+<script>
+    const sessionId = {{ session_id }};
+    let attempts = 0;
+    const maxAttempts = 40; // ~2 minutes at 3s intervals
+
+    async function pollStatus() {
+        attempts += 1;
+        try {
+            const res = await fetch(`/checkout/status/${sessionId}`);
+            const data = await res.json();
+
+            if (data.status === "paid") {
+                window.location.href = data.redirect;
+                return;
+            }
+            if (data.status === "failed") {
+                document.getElementById("wait-panel").style.display = "none";
+                document.getElementById("failed-panel").style.display = "block";
+                document.getElementById("fail-reason").textContent =
+                    "The M-Pesa prompt was cancelled, timed out, or the payment failed.";
+                return;
+            }
+        } catch (err) {
+            // Network hiccup - just try again on the next tick.
+        }
+
+        if (attempts >= maxAttempts) {
+            document.getElementById("wait-panel").style.display = "none";
+            document.getElementById("failed-panel").style.display = "block";
+            document.getElementById("fail-reason").textContent =
+                "We didn't hear back in time. Check the driver's phone, or try again.";
+            return;
+        }
+        setTimeout(pollStatus, 3000);
+    }
+
+    pollStatus();
+</script>
+</body>
+</html>
