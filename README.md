@@ -1,6 +1,8 @@
 #MASEMBO-PARKING-SYSTEM
 A smart parking system
 Masembo — Premium Parking System
+
+
 A functional, web-based parking management prototype built for the "modern parking system" brief: drivers see live slot availability, vehicles are recorded on arrival, and on exit the system calculates duration + fee automatically before the barrier opens.
 
 Stack: Python 3 + Flask (web layer) + SQLite (dynamic database). Chosen because it needs no external DB server to install for a class submission, while still being a real relational database with proper tables, keys and growth — not a flat file.
